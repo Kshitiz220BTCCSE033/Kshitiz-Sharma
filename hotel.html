@@ -1,0 +1,1074 @@
+from google.colab import files
+from IPython.display import HTML, display
+
+# Create the HTML file
+html_content = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grand Plaza Hotel - Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border 0.3s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #667eea;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 2em;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .room-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .room-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .room-card.available {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .room-card.occupied {
+            background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+        }
+
+        .room-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .booking-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .booking-item {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .booking-item.checked-in {
+            border-left-color: #38ef7d;
+        }
+
+        .booking-item.checked-out {
+            border-left-color: #999;
+            opacity: 0.7;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            animation: slideIn 0.3s;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏨 Grand Plaza Hotel</h1>
+            <p class="subtitle">Luxury Hotel Management System</p>
+        </header>
+
+        <div class="dashboard">
+            <div class="card">
+                <h2>📊 Dashboard</h2>
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-number" id="totalRooms">6</div>
+                        <div class="stat-label">Total Rooms</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="availableRooms">6</div>
+                        <div class="stat-label">Available</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="totalBookings">0</div>
+                        <div class="stat-label">Bookings</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="totalGuests">0</div>
+                        <div class="stat-label">Guests</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🛏️ Room Management</h2>
+                <button class="btn" onclick="showRooms()">View All Rooms</button>
+                <button class="btn btn-secondary" onclick="showAvailableRooms()">Check Availability</button>
+            </div>
+
+            <div class="card">
+                <h2>👤 Guest Management</h2>
+                <button class="btn" onclick="showAddGuest()">Add New Guest</button>
+                <button class="btn btn-secondary" onclick="showAllGuests()">View All Guests</button>
+            </div>
+
+            <div class="card">
+                <h2>📅 Booking Management</h2>
+                <button class="btn" onclick="showCreateBooking()">Create Booking</button>
+                <button class="btn btn-secondary" onclick="showAllBookings()">View All Bookings</button>
+                <button class="btn btn-success" onclick="showCheckInOut()">Check-In / Check-Out</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="roomsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>All Rooms</h2>
+                <button class="close-btn" onclick="closeModal('roomsModal')">&times;</button>
+            </div>
+            <div id="roomsContainer" class="room-grid"></div>
+        </div>
+    </div>
+
+    <div id="availabilityModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Check Availability</h2>
+                <button class="close-btn" onclick="closeModal('availabilityModal')">&times;</button>
+            </div>
+            <div class="input-group">
+                <label>Check-In Date:</label>
+                <input type="date" id="checkInDate">
+            </div>
+            <div class="input-group">
+                <label>Check-Out Date:</label>
+                <input type="date" id="checkOutDate">
+            </div>
+            <button class="btn" onclick="checkAvailability()">Check Availability</button>
+            <div id="availabilityResults" class="room-grid"></div>
+        </div>
+    </div>
+
+    <div id="addGuestModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Guest</h2>
+                <button class="close-btn" onclick="closeModal('addGuestModal')">&times;</button>
+            </div>
+            <div id="guestAlert"></div>
+            <div class="input-group">
+                <label>Guest Name:</label>
+                <input type="text" id="guestName" placeholder="Enter full name">
+            </div>
+            <div class="input-group">
+                <label>Email:</label>
+                <input type="email" id="guestEmail" placeholder="guest@email.com">
+            </div>
+            <div class="input-group">
+                <label>Phone:</label>
+                <input type="tel" id="guestPhone" placeholder="+1234567890">
+            </div>
+            <button class="btn" onclick="addGuest()">Add Guest</button>
+        </div>
+    </div>
+
+    <div id="allGuestsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>All Guests</h2>
+                <button class="close-btn" onclick="closeModal('allGuestsModal')">&times;</button>
+            </div>
+            <div id="guestsList" class="booking-list"></div>
+        </div>
+    </div>
+
+    <div id="createBookingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create Booking</h2>
+                <button class="close-btn" onclick="closeModal('createBookingModal')">&times;</button>
+            </div>
+            <div id="bookingAlert"></div>
+            <div class="input-group">
+                <label>Select Guest:</label>
+                <select id="bookingGuest"></select>
+            </div>
+            <div class="input-group">
+                <label>Select Room:</label>
+                <select id="bookingRoom"></select>
+            </div>
+            <div class="input-group">
+                <label>Check-In Date:</label>
+                <input type="date" id="bookingCheckIn">
+            </div>
+            <div class="input-group">
+                <label>Check-Out Date:</label>
+                <input type="date" id="bookingCheckOut">
+            </div>
+            <button class="btn" onclick="createBooking()">Create Booking</button>
+        </div>
+    </div>
+
+    <div id="allBookingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>All Bookings</h2>
+                <button class="close-btn" onclick="closeModal('allBookingsModal')">&times;</button>
+            </div>
+            <div id="bookingsList" class="booking-list"></div>
+        </div>
+    </div>
+
+    <div id="checkInOutModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Check-In / Check-Out</h2>
+                <button class="close-btn" onclick="closeModal('checkInOutModal')">&times;</button>
+            </div>
+            <div id="checkInOutAlert"></div>
+            <div class="input-group">
+                <label>Select Booking:</label>
+                <select id="checkInOutBooking"></select>
+            </div>
+            <button class="btn" onclick="checkIn()">Check-In</button>
+            <button class="btn btn-secondary" onclick="checkOut()">Check-Out</button>
+        </div>
+    </div>
+
+    <script>
+        const hotelData = {
+            rooms: [
+                { number: 101, type: 'Single', price: 100, available: true, guest: null },
+                { number: 102, type: 'Single', price: 100, available: true, guest: null },
+                { number: 103, type: 'Double', price: 150, available: true, guest: null },
+                { number: 104, type: 'Double', price: 150, available: true, guest: null },
+                { number: 105, type: 'Suite', price: 250, available: true, guest: null },
+                { number: 106, type: 'Deluxe', price: 300, available: true, guest: null }
+            ],
+            guests: [],
+            bookings: [],
+            nextGuestId: 1,
+            nextBookingId: 1
+        };
+
+        function updateDashboard() {
+            document.getElementById('totalRooms').textContent = hotelData.rooms.length;
+            document.getElementById('availableRooms').textContent = hotelData.rooms.filter(r => r.available).length;
+            document.getElementById('totalBookings').textContent = hotelData.bookings.length;
+            document.getElementById('totalGuests').textContent = hotelData.guests.length;
+        }
+
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function showRooms() {
+            const container = document.getElementById('roomsContainer');
+            container.innerHTML = hotelData.rooms.map(room => '<div class="room-card ' + (room.available ? 'available' : 'occupied') + '"><div class="room-number">' + room.number + '</div><div>' + room.type + '</div><div>Rs' + room.price + '/night</div><div style="margin-top: 10px; font-weight: bold;">' + (room.available ? '✓ Available' : '✗ Occupied') + '</div>' + (room.guest ? '<div style="font-size: 0.9em; margin-top: 5px;">' + room.guest + '</div>' : '') + '</div>').join('');
+            showModal('roomsModal');
+        }
+
+        function showAvailableRooms() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('checkInDate').value = today;
+            document.getElementById('checkInDate').min = today;
+            document.getElementById('checkOutDate').min = today;
+            showModal('availabilityModal');
+        }
+
+        function checkAvailability() {
+            const checkIn = document.getElementById('checkInDate').value;
+            const checkOut = document.getElementById('checkOutDate').value;
+
+            if (!checkIn || !checkOut) {
+                alert('Please select both dates');
+                return;
+            }
+
+            if (new Date(checkOut) <= new Date(checkIn)) {
+                alert('Check-out date must be after check-in date');
+                return;
+            }
+
+            const available = hotelData.rooms.filter(room => {
+                return !hotelData.bookings.some(booking => {
+                    if (booking.roomNumber === room.number && !booking.checkedOut) {
+                        const bookingCheckIn = new Date(booking.checkIn);
+                        const bookingCheckOut = new Date(booking.checkOut);
+                        const newCheckIn = new Date(checkIn);
+                        const newCheckOut = new Date(checkOut);
+                        return !(newCheckOut <= bookingCheckIn || newCheckIn >= bookingCheckOut);
+                    }
+                    return false;
+                });
+            });
+
+            const container = document.getElementById('availabilityResults');
+            if (available.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 20px;">No rooms available for selected dates</p>';
+            } else {
+                container.innerHTML = available.map(room => '<div class="room-card available"><div class="room-number">' + room.number + '</div><div>' + room.type + '</div><div>Rs' + room.price + '/night</div><div style="margin-top: 10px; font-weight: bold;">✓ Available</div></div>').join('');
+            }
+        }
+
+        function showAddGuest() {
+            document.getElementById('guestName').value = '';
+            document.getElementById('guestEmail').value = '';
+            document.getElementById('guestPhone').value = '';
+            document.getElementById('guestAlert').innerHTML = '';
+            showModal('addGuestModal');
+        }
+
+        function addGuest() {
+            const name = document.getElementById('guestName').value.trim();
+            const email = document.getElementById('guestEmail').value.trim();
+            const phone = document.getElementById('guestPhone').value.trim();
+
+            if (!name || !email || !phone) {
+                document.getElementById('guestAlert').innerHTML = '<div class="alert alert-error">All fields are required!</div>';
+                return;
+            }
+
+            const guest = {
+                id: hotelData.nextGuestId++,
+                name,
+                email,
+                phone
+            };
+
+            hotelData.guests.push(guest);
+            document.getElementById('guestAlert').innerHTML = '<div class="alert alert-success">Guest added successfully! ID: ' + guest.id + '</div>';
+
+            document.getElementById('guestName').value = '';
+            document.getElementById('guestEmail').value = '';
+            document.getElementById('guestPhone').value = '';
+
+            updateDashboard();
+        }
+
+        function showAllGuests() {
+            const container = document.getElementById('guestsList');
+            if (hotelData.guests.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 20px;">No guests found</p>';
+            } else {
+                container.innerHTML = hotelData.guests.map(guest => '<div class="booking-item"><strong>Guest #' + guest.id + ': ' + guest.name + '</strong><br>📧 ' + guest.email + '<br>📞 ' + guest.phone + '</div>').join('');
+            }
+            showModal('allGuestsModal');
+        }
+
+        function showCreateBooking() {
+            if (hotelData.guests.length === 0) {
+                alert('Please add guests first!');
+                return;
+            }
+
+            const guestSelect = document.getElementById('bookingGuest');
+            guestSelect.innerHTML = '<option value="">Select Guest</option>' + hotelData.guests.map(g => '<option value="' + g.id + '">' + g.name + ' (ID: ' + g.id + ')</option>').join('');
+
+            const roomSelect = document.getElementById('bookingRoom');
+            roomSelect.innerHTML = '<option value="">Select Room</option>' + hotelData.rooms.map(r => '<option value="' + r.number + '">Room ' + r.number + ' - ' + r.type + ' (Rs' + r.price + ')</option>').join('');
+
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('bookingCheckIn').value = today;
+            document.getElementById('bookingCheckIn').min = today;
+            document.getElementById('bookingCheckOut').min = today;
+            document.getElementById('bookingAlert').innerHTML = '';
+
+            showModal('createBookingModal');
+        }
+
+        function createBooking() {
+            const guestId = parseInt(document.getElementById('bookingGuest').value);
+            const roomNumber = parseInt(document.getElementById('bookingRoom').value);
+            const checkIn = document.getElementById('bookingCheckIn').value;
+            const checkOut = document.getElementById('bookingCheckOut').value;
+
+            if (!guestId || !roomNumber || !checkIn || !checkOut) {
+                document.getElementById('bookingAlert').innerHTML = '<div class="alert alert-error">All fields are required!</div>';
+                return;
+            }
+
+            if (new Date(checkOut) <= new Date(checkIn)) {
+                document.getElementById('bookingAlert').innerHTML = '<div class="alert alert-error">Check-out date must be after check-in date!</div>';
+                return;
+            }
+
+            const guest = hotelData.guests.find(g => g.id === guestId);
+            const room = hotelData.rooms.find(r => r.number === roomNumber);
+
+            const isAvailable = !hotelData.bookings.some(booking => {
+                if (booking.roomNumber === roomNumber && !booking.checkedOut) {
+                    const bookingCheckIn = new Date(booking.checkIn);
+                    const bookingCheckOut = new Date(booking.checkOut);
+                    const newCheckIn = new Date(checkIn);
+                    const newCheckOut = new Date(checkOut);
+                    return !(newCheckOut <= bookingCheckIn || newCheckIn >= bookingCheckOut);
+                }
+                return false;
+            });
+
+            if (!isAvailable) {
+                document.getElementById('bookingAlert').innerHTML = '<div class="alert alert-error">Room not available for selected dates!</div>';
+                return;
+            }
+
+            const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+            const total = nights * room.price;
+
+            const booking = {
+                id: hotelData.nextBookingId++,
+                guestId,
+                guestName: guest.name,
+                roomNumber,
+                roomType: room.type,
+                checkIn,
+                checkOut,
+                total,
+                checkedIn: false,
+                checkedOut: false
+            };
+
+            hotelData.bookings.push(booking);
+            document.getElementById('bookingAlert').innerHTML = '<div class="alert alert-success">Booking created! ID: ' + booking.id + ' | Total: Rs' + total + '</div>';
+
+            updateDashboard();
+        }
+
+        function showAllBookings() {
+            const container = document.getElementById('bookingsList');
+            if (hotelData.bookings.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 20px;">No bookings found</p>';
+            } else {
+                container.innerHTML = hotelData.bookings.map(booking => {
+                    const status = booking.checkedOut ? 'Checked Out' : (booking.checkedIn ? 'Checked In' : 'Reserved');
+                    const className = booking.checkedOut ? 'checked-out' : (booking.checkedIn ? 'checked-in' : '');
+                    return '<div class="booking-item ' + className + '"><strong>Booking #' + booking.id + '</strong> - ' + status + '<br>👤 ' + booking.guestName + '<br>🛏️ Room ' + booking.roomNumber + ' (' + booking.roomType + ')<br>📅 ' + booking.checkIn + ' to ' + booking.checkOut + '<br>💰 Total: Rs' + booking.total + '</div>';
+                }).join('');
+            }
+            showModal('allBookingsModal');
+        }
+
+        function showCheckInOut() {
+            if (hotelData.bookings.length === 0) {
+                alert('No bookings available!');
+                return;
+            }
+
+            const select = document.getElementById('checkInOutBooking');
+            select.innerHTML = '<option value="">Select Booking</option>' + hotelData.bookings.map(b => {
+                const status = b.checkedOut ? '(Checked Out)' : (b.checkedIn ? '(Checked In)' : '(Reserved)');
+                return '<option value="' + b.id + '">Booking #' + b.id + ' - ' + b.guestName + ' - Room ' + b.roomNumber + ' ' + status + '</option>';
+            }).join('');
+
+            document.getElementById('checkInOutAlert').innerHTML = '';
+            showModal('checkInOutModal');
+        }
+
+        function checkIn() {
+            const bookingId = parseInt(document.getElementById('checkInOutBooking').value);
+            if (!bookingId) {
+                document.getElementById('checkInOutAlert').innerHTML = '<div class="alert alert-error">Please select a booking!</div>';
+                return;
+            }
+
+            const booking = hotelData.bookings.find(b => b.id === bookingId);
+            if (booking.checkedIn) {
+                document.getElementById('checkInOutAlert').innerHTML = '<div class="alert alert-error">Already checked in!</div>';
+                return;
+            }
+
+            booking.checkedIn = true;
+            const room = hotelData.rooms.find(r => r.number === booking.roomNumber);
+            room.available = false;
+            room.guest = booking.guestName;
+
+            document.getElementById('checkInOutAlert').innerHTML = '<div class="alert alert-success">Check-in successful for Booking #' + bookingId + '!</div>';
+
+            updateDashboard();
+            showCheckInOut();
+        }
+
+        function checkOut() {
+            const bookingId = parseInt(document.getElementById('checkInOutBooking').value);
+            if (!bookingId) {
+                document.getElementById('checkInOutAlert').innerHTML = '<div class="alert alert-error">Please select a booking!</div>';
+                return;
+            }
+
+            const booking = hotelData.bookings.find(b => b.id === bookingId);
+            if (!booking.checkedIn) {
+                document.getElementById('checkInOutAlert').innerHTML = '<div class="alert alert-error">Not checked in yet!</div>';
+                return;
+            }
+
+            if (booking.checkedOut) {
+                document.getElementById('checkInOutAlert').innerHTML = '<div class="alert alert-error">Already checked out!</div>';
+                return;
+            }
+
+            booking.checkedOut = true;
+            const room = hotelData.rooms.find(r => r.number === booking.roomNumber);
+            room.available = true;
+            room.guest = null;
+
+            document.getElementById('checkInOutAlert').innerHTML = '<div class="alert alert-success">Check-out successful! Total Amount: Rs' + booking.total + '</div>';
+
+            updateDashboard();
+            showCheckInOut();
+        }
+
+        updateDashboard();
+    </script>
+</body>
+</html>"""
+
+# Save to file
+with open('hotel_management.html', 'w') as f:
+    f.write(html_content)
+
+print("✅ Hotel Management System created successfully!")
+print("📄 File saved as: hotel_management.html")
+print("\n🔗 To open in browser:")
+print("   1. Download the file from Colab")
+print("   2. Save it to your computer")
+print("   3. Double-click to open in your default browser")
+print("\n📱 Or copy the file path and open with your browser")
+
+# Display the website in Colab
+display(HTML(html_content))
+from IPython.display import HTML, display
+
+html_content = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Grand Plaza Hotel - AI Management System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+        .card:hover { transform: translateY(-5px);}
+        .card h2 { color: #667eea; margin-bottom: 15px; font-size: 1.5em;}
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            animation: slideIn 0.3s;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .modal {
+            display: none; position: fixed; top: 0; left: 0;
+            width:100%; height:100%; background:rgba(0,0,0,0.7);
+            z-index: 1000; align-items: center; justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white; padding: 30px; border-radius: 15px; max-width: 500px;
+            width: 90%; max-height: 90vh; overflow-y: auto;
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;}
+        .modal-header h2 { color: #667eea; }
+        .close-btn {
+            background: none; border: none; font-size: 2em; cursor: pointer; color: #999;
+        }
+        @media (max-width: 768px){
+            h1{font-size:1.8em;}
+            .dashboard{grid-template-columns:1fr;}
+        }
+    </style>
+    <!-- Import Chart.js for occupancy forecasting -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>🏨 Grand Plaza Hotel</h1>
+        <p class="subtitle">AI-Powered Hotel Management System</p>
+    </header>
+    <div class="dashboard">
+        <div class="card">
+            <h2>💰 Dynamic Pricing</h2>
+            <p>Upload competitor pricing data (CSV with "name,rate")</p>
+            <input type="file" id="csvUpload" accept=".csv" />
+            <button class="btn" onclick="analyzePricing()">Analyze Pricing</button>
+            <div id="pricingInsight" style="margin-top: 15px;"></div>
+        </div>
+        <div class="card">
+            <h2>💬 Customer Feedback</h2>
+            <input type="file" id="feedbackFile" accept=".csv" style="margin-bottom:10px;">
+            <button class="btn" onclick="analyzeFeedback()">Analyze Customer Feedback</button>
+            <div id="feedbackResults" style="margin-top:15px;"></div>
+        </div>
+
+
+
+        <div class="card">
+            <h2>📈 Occupancy Forecast</h2>
+            <canvas id="occupancyChart" width="400" height="200"></canvas>
+            <button class="btn" onclick="predictOccupancy()">Predict Next 6 Months</button>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script>
+    // Basic hotelData for demo, could be extended for booking/guest/room mgmt
+    const hotelData = {
+        rooms: [
+            { number: 101, type: 'Single', price: 100, available: true },
+            { number: 102, type: 'Single', price: 100, available: true },
+            { number: 103, type: 'Double', price: 150, available: true },
+            { number: 104, type: 'Double', price: 150, available: true },
+            { number: 105, type: 'Suite', price: 250, available: true },
+            { number: 106, type: 'Deluxe', price: 300, available: true }
+        ]
+    };
+
+    // Dynamic Pricing: CSV + Seasonal Adjustment
+    function analyzePricing() {
+        const file = document.getElementById('csvUpload').files[0];
+        if (!file) {
+            alert("Please upload a competitor pricing CSV file.");
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = e.target.result.split('\\n').slice(1);
+            const prices = data.map(row => parseFloat(row.split(',')[1])).filter(n => !isNaN(n));
+            const avgCompetitor = prices.reduce((a, b) => a + b, 0) / prices.length || 100;
+            const today = new Date();
+            const day = today.getDay();
+            const month = today.getMonth();
+            let dynamicAdjustment = 1.0;
+            const holidays = {11:[25],0:[1],2:[8],9:[20]};
+            if (holidays[month] && holidays[month].includes(today.getDate())) { dynamicAdjustment += 0.25;}
+            if (day === 5 || day === 6) dynamicAdjustment += 0.15;
+            if (month >= 4 && month <= 7) dynamicAdjustment += 0.2;
+            hotelData.rooms.forEach(room => {
+              room.price = Math.round(avgCompetitor * dynamicAdjustment);
+            });
+            document.getElementById('pricingInsight').innerHTML = `<div class="alert alert-success">Dynamic pricing applied! Competitor avg: Rs${avgCompetitor.toFixed(0)}.<br>Adjusted for season: ${(dynamicAdjustment * 100).toFixed(0)}%.</div>`;
+        };
+        reader.readAsText(file);
+    }
+
+    // Sentiment Analysis for Feedback
+    function analyzeFeedback() {
+  const fileInput = document.getElementById('feedbackFile');
+  const file = fileInput.files[0];
+  const resultsDiv = document.getElementById('feedbackResults');
+
+  if (!file) {
+    alert('Please upload a CSV file first!');
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = function(e) {
+    const text = e.target.result;
+    const rows = text.split('\n').filter(r => r.trim() !== '');
+
+    if (rows.length < 2) {
+      resultsDiv.innerHTML = '<div class="alert alert-error">Invalid CSV format!</div>';
+      return;
+    }
+
+    // Assume first line = header, column name: Feedback
+    const feedbackIndex = rows[0].toLowerCase().split(',').indexOf('feedback');
+    if (feedbackIndex === -1) {
+      resultsDiv.innerHTML = '<div class="alert alert-error">No "Feedback" column found in CSV!</div>';
+      return;
+    }
+
+    let positive = 0, negative = 0, neutral = 0;
+
+    for (let i = 1; i < rows.length; i++) {
+      const cols = rows[i].split(',');
+      const feedback = cols[feedbackIndex]?.toLowerCase() || '';
+
+      if (feedback.includes('good') || feedback.includes('great') || feedback.includes('excellent') || feedback.includes('amazing')) {
+        positive++;
+      } else if (feedback.includes('bad') || feedback.includes('poor') || feedback.includes('terrible') || feedback.includes('worst')) {
+        negative++;
+      } else {
+        neutral++;
+      }
+    }
+
+    const total = positive + negative + neutral;
+
+    resultsDiv.innerHTML = `
+      <div class="alert alert-success">
+        <strong>Feedback Analysis Complete!</strong><br>
+        Total Feedback: ${total}<br>
+        😊 Positive: ${positive}<br>
+        😐 Neutral: ${neutral}<br>
+        😞 Negative: ${negative}
+      </div>
+    `;
+  };
+
+  reader.readAsText(file);
+}
+
+    // Analyze sentiment
+    const text = combinedFeedback.toLowerCase();
+    const positives = ['good','great','excellent','amazing','clean','friendly','loved','spacious','awesome','love'];
+    const negatives = ['bad','dirty','poor','terrible','slow','rude','hated','worst','small','hate'];
+    let score = 0;
+    positives.forEach(word => text.includes(word) && score++);
+    negatives.forEach(word => text.includes(word) && score--);
+    let sentiment = "Neutral";
+    if (score > 1) sentiment = "Positive 😊";
+    else if (score < -1) sentiment = "Negative 😔";
+    document.getElementById('feedbackResult').innerHTML =
+      `<div class="alert ${score >= 0 ? 'alert-success' : 'alert-error'}">
+         Sentiment: <b>${sentiment}</b> (Score ${score})<br>
+         Feedback analyzed: ${combinedFeedback.trim() || 'No feedback found.'}
+       </div>`;
+  };
+  reader.readAsText(file);
+}
+
+
+    // Show/Close Modal Helper
+    function showModal(id) {
+        document.getElementById(id).classList.add('active');
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
+
+    // Occupancy Rate Prediction with Chart.js
+    let occupancyChart = null;
+    function predictOccupancy() {
+        const ctx = document.getElementById('occupancyChart').getContext('2d');
+        const labels = ['Nov','Dec','Jan','Feb','Mar','Apr'];
+        const pastRate = 70 + Math.floor(Math.random() * 15);
+        const forecast = labels.map(() => pastRate + (Math.random() * 10 - 5));
+        if (occupancyChart) occupancyChart.destroy();
+        occupancyChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels,
+              datasets: [{
+                label: 'Predicted Occupancy (%)',
+                data: forecast,
+                fill: false,
+                borderColor: '#667eea',
+                tension: 0.3
+              }]
+            },
+            options: { scales: { y: { beginAtZero: true, max: 100 }}}
+        });
+    }
+</script>
+</body>
+</html>
+"""
+
+with open('hotel_management_ai.html', 'w') as f:
+    f.write(html_content)
+
+print("✅ Hotel Management AI System created successfully!")
+print("📄 File saved as: hotel_management_ai.html")
+print("\n🔗 To open in browser:")
+print("   1. Download the file from Colab")
+print("   2. Save it to your computer")
+print("   3. Double-click to open in your default browser")
+print("\n📱 Or copy the file path and open with your browser")
+
+display(HTML(html_content))
